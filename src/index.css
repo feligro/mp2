@@ -11,3 +11,62 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+main{
+  background-color: lightgoldenrodyellow;
+}
+
+header{
+  background-color: rgb(208, 22, 22);
+  color: white;
+  padding-right: 3%;
+  display: grid;
+  grid-template-columns: 4fr 2fr;
+  text-align: center;
+  align-items: center;
+}
+header nav{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  text-align: center;
+  align-items: center;
+}
+
+footer{
+  background-color: black;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}
+
+button {
+  background-color: rgb(156, 155, 155);
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.page, .card, .card-body, .detail, .detail-body{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.detail{
+  width: 80%;
+}
+
+.card, .detail{
+  border: 15px solid;
+  border-radius: 90px;
+  padding: 10px;
+  margin: 10px;
+  width: 60vw;
+}
