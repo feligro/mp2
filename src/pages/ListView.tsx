@@ -52,7 +52,7 @@ export default function ListView() {
         }
 
         // No query: classic paged list (60 per page)
-        const page = await fetchPokemonPage(offset, 60);
+        const page = await fetchPokemonPage(offset, 513);
         const full = await Promise.all(page.results.map(r => fetchPokemon(r.name)));
         if (alive) setItems(full);
       } catch (e: any) {
@@ -91,8 +91,8 @@ export default function ListView() {
 
         <button onClick={() => setAsc(a => !a)}>{asc ? 'Asc' : 'Desc'}</button>
 
-        <button onClick={() => setOffset(o => Math.max(0, o - 60))} disabled={!!query}>Prev Page</button>
-        <button onClick={() => setOffset(o => o + 60)} disabled={!!query}>Next Page</button>
+        <button onClick={() => setOffset(o => Math.max(0, o - 513))} disabled={!!query}>Prev Page</button>
+        <button onClick={() => setOffset(o => o + 513)} disabled={!!query}>Next Page</button>
 
         {query && <button onClick={() => setRawQuery('')}>Clear</button>}
       </div>

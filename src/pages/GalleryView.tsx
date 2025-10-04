@@ -61,6 +61,7 @@ export default function GalleryView() {
               key={t}
               className={`chip ${typeFilters.has(t) ? 'active' : ''}`}
               onClick={() => toggleType(t)}
+              aria-pressed={typeFilters.has(t)}
             >
               {t}
             </button>
