@@ -5,7 +5,7 @@ import SearchBar from '../components/SearchBar';
 import PokemonCard from '../components/PokemonCard';
 import useDebounce from '../hooks/useDebounce';
 
-type SortKey = 'name' | 'id';
+type SortKey = 'name' | 'id' | 'generation';
 
 export default function ListView() {
   const [rawQuery, setRawQuery] = useState('');
@@ -100,7 +100,7 @@ export default function ListView() {
       {err && <p style={{ color: 'crimson' }}>{err}</p>}
       {loading && <p>Loading…</p>}
 
-      <div className="grid">
+      <div className="list">
         {shown.map(p => <PokemonCard key={p.id} p={p} />)}
       </div>
 

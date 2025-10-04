@@ -3,8 +3,6 @@ import type { Pokemon, PokemonListResponse, PokemonSpecies, Generation } from '.
 
 const api = axios.create({ baseURL: 'https://pokeapi.co/api/v2' });
 
-// very small localStorage cache for GETs
-// --- add a tiny in-memory cache to always have a fallback
 const mem = new Map<string, { t: number; v: any }>();
 
 const trySetLocalStorage = (key: string, payload: string) => {
@@ -12,7 +10,6 @@ const trySetLocalStorage = (key: string, payload: string) => {
     localStorage.setItem(key, payload);
     return true;
   } catch (e: any) {
-    // if quota exceeded, prune some of our own keys and try once more
     try {
       const ours = Object.keys(localStorage).filter(k => k.startsWith('pk:'));
       const half = Math.ceil(ours.length / 2);
@@ -20,17 +17,15 @@ const trySetLocalStorage = (key: string, payload: string) => {
       localStorage.setItem(key, payload);
       return true;
     } catch {
-      return false; // give up, rely on memory cache only
+      return false;
     }
   }
 };
 
 const getCached = async <T>(key: string, fetcher: () => Promise<T>, ttlMs = 1000 * 60 * 60) => {
-  // memory first
   const m = mem.get(key);
   if (m && Date.now() - m.t < ttlMs) return m.v as T;
 
-  // localStorage second
   try {
     const raw = localStorage.getItem(key);
     if (raw) {
@@ -42,15 +37,14 @@ const getCached = async <T>(key: string, fetcher: () => Promise<T>, ttlMs = 1000
     }
   } catch { /* ignore parse/LS errors */ }
 
-  // fetch fresh
   const v = await fetcher();
   const wrapped = JSON.stringify({ t: Date.now(), v });
   mem.set(key, { t: Date.now(), v });
-  trySetLocalStorage(key, wrapped); // if it fails, we still have mem cache
+  trySetLocalStorage(key, wrapped);
   return v;
 };
 
-export const fetchPokemonPage = (offset = 0, limit = 60) =>
+export const fetchPokemonPage = (offset = 0, limit = 15) =>
   getCached<PokemonListResponse>(
     `pk:list:${offset}:${limit}`,
     async () => (await api.get(`/pokemon?offset=${offset}&limit=${limit}`)).data
@@ -82,5 +76,5 @@ export const fetchAllSpeciesNames = () =>
       const res = await api.get(`/pokemon-species?limit=${limit}&offset=0`);
       return (res.data.results as { name: string }[]).map(r => r.name);
     },
-    1000 * 60 * 60 * 24 // 24h
+    1000 * 60 * 60 * 24
   );

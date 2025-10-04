@@ -46,21 +46,23 @@ export default function DetailView() {
           <div className="types">
             {types.map(t => <span key={t} className="type" style={{ background: typeBg([t]) }}>{t[0].toUpperCase() + t.slice(1)}</span>)}
           </div>
+          <div className="divider">
+            <div className="subdivider">
+                <p className="desc">{desc}</p>
+            </div>
 
-          <p className="desc">{desc}</p>
-
-          <h3>Base Stats</h3>
-          <ul className="stats">
-            {p.stats.map(s => (
-              <li key={s.stat.name}>
-                <span className="stat-name">{s.stat.name}</span>
-                <span className="stat-bar">
-                  <span className="fill" style={{ width: `${Math.min(100, s.base_stat)}%`, background: bg }} />
-                </span>
-                <span className="stat-val">{s.base_stat}</span>
-              </li>
-            ))}
-          </ul>
+            <div className="subdivider">
+                <h3>Base Stats</h3>
+                <ul className="stats">
+                    {p.stats.map(s => (
+                    <li key={s.stat.name}>
+                        <span className="stat-name">{s.stat.name.toUpperCase()}:</span>
+                        <span className="stat-val"> {s.base_stat}</span>
+                    </li>
+                    ))}
+                </ul>
+            </div>
+          </div>
 
           <div className="pager">
             <button onClick={() => nav(`/pokemon/${prevId}`)}>&larr; Prev</button>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchGeneration, fetchPokemon } from '../api/pokeapi';
 import type { Pokemon, PokemonTypeName } from '../types/pokemon';
-import PokemonCard from '../components/PokemonCard';
+import PokemonSprite from '../components/PokemonSprite';
 
 const GENERATIONS = [
   { id: 1, label: 'Gen I' }, { id: 2, label: 'Gen II' }, { id: 3, label: 'Gen III' },
@@ -31,7 +31,7 @@ export default function GalleryView() {
     (async () => {
       const g = await fetchGeneration(gen);
       // limit to first 50 of the generation to keep it snappy
-      const names = g.pokemon_species.slice(0, 50).map(s => s.name);
+      const names = g.pokemon_species.slice(0, 30).map(s => s.name);
       const full = await Promise.all(names.map(n => fetchPokemon(n)));
       if (isMounted) setItems(full);
     })();
@@ -69,7 +69,7 @@ export default function GalleryView() {
       </div>
 
       <div className="grid">
-        {filtered.map(p => <PokemonCard key={p.id} p={p} />)}
+        {filtered.map(p => <PokemonSprite key={p.id} p={p} />)}
       </div>
     </div>
   );
