@@ -137,11 +137,11 @@ button {
 .stat-name { 
   text-transform: uppercase;
 }
-/* error text for ListView */
+
 .error { color: crimson; }
 
 
-/* (optional) light spacing for the toolbar */
+
 .toolbar { 
   padding-right: 0.5%;
   padding-left: 0.5%;
@@ -151,20 +151,18 @@ button {
   center; 
   flex-wrap: wrap; }
 
-/* --- Pokémon type palette as CSS custom properties --- */
 :root{
   --normal:#A8A77A; --fire:#EE8130; --water:#6390F0; --electric:#F7D02C; --grass:#7AC74C;
   --ice:#96D9D6; --fighting:#C22E28; --poison:#A33EA1; --ground:#E2BF65; --flying:#A98FF3;
   --psychic:#F95587; --bug:#A6B91A; --rock:#B6A136; --ghost:#735797; --dragon:#6F35FC;
   --dark:#705746; --steel:#B7B7CE; --fairy:#D685AD;
 }
-:root { --footer-h: 10% }   /* use a real px height, not % */
-
+:root { --footer-h: 10% }   
 footer{
   position: fixed;
   left: 0; right: 0; bottom: 0;
   height: var(--footer-h);
-  box-sizing: border-box;     /* include padding inside height */
+  box-sizing: border-box;     
   background: black;
   color: white;
   text-align: center;

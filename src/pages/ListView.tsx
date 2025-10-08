@@ -89,7 +89,6 @@ export default function ListView() {
           return;
         }
 
-        // use PAGE_SIZE everywhere
         const page = await fetchPokemonPage(offset, PAGE_SIZE);
         const full = await Promise.all(page.results.map((r: any) => fetchPokemon(r.name)));
         if (alive) setItems(full);

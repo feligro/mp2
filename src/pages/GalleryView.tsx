@@ -34,16 +34,14 @@ export default function GalleryView() {
     try {
       const g = await fetchGeneration(gen);
 
-      // species names from the generation (cap to keep it snappy)
       const speciesNames = g.pokemon_species.slice(0, 156).map((s: any) => s.name);
 
-      // Map species -> default variety's pokemon name (handles deoxys, giratina, etc.)
       const defaultPokemonNames = await Promise.all(
         speciesNames.map(async (name: string) => {
           try {
             const s = await fetchSpecies(name);
             const def = s.varieties.find((v: any) => v.is_default) ?? s.varieties[0];
-            return def.pokemon.name; // e.g. "deoxys-normal"
+            return def.pokemon.name; 
           } catch (e) {
             console.warn('species lookup failed:', name, e);
             return null;
@@ -51,10 +49,8 @@ export default function GalleryView() {
         })
       );
 
-      // Dedup + drop nulls
       const names = Array.from(new Set(defaultPokemonNames.filter(Boolean) as string[]));
 
-      // Fetch pokemon entries; tolerate individual failures
       const results = await Promise.allSettled<Pokemon>(
         names.map(n => fetchPokemon(n))
       );
@@ -68,8 +64,6 @@ export default function GalleryView() {
       if (isMounted) setItems(full);
     } catch (e) {
       console.error(e);
-      // optional: set an error state if you want to show a toast/message
-      // setErr('Failed to load generation');
     }
   })();
   return () => { isMounted = false; };

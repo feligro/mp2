@@ -31,7 +31,7 @@ export interface PokemonSpecies {
     language: NamedAPIResource;
     version: NamedAPIResource;
   }[];
-  generation: NamedAPIResource; // e.g. "generation-i"
+  generation: NamedAPIResource;
   varieties: { is_default: boolean; pokemon: { name: string; url: string } }[];
 }
 
@@ -43,6 +43,6 @@ export async function fetchSpecies(nameOrId: string | number): Promise<PokemonSp
 
 export interface Generation {
   id: number;
-  name: string;                 // "generation-i"
-  pokemon_species: NamedAPIResource[]; // names, not forms
+  name: string;                
+  pokemon_species: NamedAPIResource[];
 }
