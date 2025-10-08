@@ -22,6 +22,7 @@ export interface Pokemon {
     };
   };
   stats: { base_stat: number; stat: NamedAPIResource }[];
+  species: NamedAPIResource;
 }
 
 export interface PokemonSpecies {
@@ -31,6 +32,13 @@ export interface PokemonSpecies {
     version: NamedAPIResource;
   }[];
   generation: NamedAPIResource; // e.g. "generation-i"
+  varieties: { is_default: boolean; pokemon: { name: string; url: string } }[];
+}
+
+export async function fetchSpecies(nameOrId: string | number): Promise<PokemonSpecies> {
+  const res = await fetch('https://pokeapi.co/api/v2/pokemon-species/${nameOrId}');
+  if (!res.ok) throw new Error('Species not found');
+  return res.json();
 }
 
 export interface Generation {

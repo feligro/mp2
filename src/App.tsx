@@ -11,8 +11,8 @@ export default function App() {
       <header className="header">
         <h1>Pokédex</h1>
         <nav>
-          <NavLink to="/" end>List</NavLink>
-          <NavLink to="/gallery">Gallery</NavLink>
+          <NavLink to="/" end className="links">List</NavLink>
+          <NavLink to="/gallery" className="links">Gallery</NavLink>
         </nav>
       </header>
 
@@ -24,7 +24,10 @@ export default function App() {
         </Routes>
       </main>
 
-      <footer className="footer">CS 409 · MP2</footer>
+      <footer className="footer">
+        <h4>CS 409 · MP2</h4>
+        <h4>THE POkéMON COMPANY - All rights reserved</h4>
+      </footer>
     </>
   );
 }

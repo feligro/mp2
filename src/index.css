@@ -16,7 +16,7 @@ main{
   background-color: lightgoldenrodyellow;
 }
 
-h3{
+h3 {
   text-decoration: none;
 }
 
@@ -71,6 +71,13 @@ button {
   color: white;
 }
 
+.links{ 
+  color: inherit; /* or any color you prefer, e.g., black */ 
+  text-decoration: none; /* removes underline */ 
+  font-weight: normal; /* optional: reset any bolding */ 
+} 
+.links:hover { text-decoration: none; }
+
 .page, .card, .card-body, .detail, .detail-body, .subdivider{
   display: flex;
   flex-direction: column;
@@ -78,7 +85,7 @@ button {
   justify-content: center;
 }
 .desc{
-  align-items: justify;
+  text-align: justify;
 }
 
 .detail{
@@ -86,7 +93,7 @@ button {
 }
 
 .card, .detail{
-  border: 15px solid;
+  border: 15px solid var(--accent, #ddd);
   border-radius: 90px;
   padding: 10px;
   margin: 10px;
@@ -109,6 +116,13 @@ button {
   align-items: center;
 }
 
+.list{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3%;
+  padding: 1%;
+}
 
 .grid{
   display: grid;
@@ -119,3 +133,118 @@ button {
 .card{
   width: 80%;
 }
+
+.stat-name { 
+  text-transform: uppercase;
+}
+/* error text for ListView */
+.error { color: crimson; }
+
+
+/* (optional) light spacing for the toolbar */
+.toolbar { 
+  padding-right: 0.5%;
+  padding-left: 0.5%;
+  display: flex; 
+  gap: 12px; 
+  align-items: 
+  center; 
+  flex-wrap: wrap; }
+
+/* --- Pokémon type palette as CSS custom properties --- */
+:root{
+  --normal:#A8A77A; --fire:#EE8130; --water:#6390F0; --electric:#F7D02C; --grass:#7AC74C;
+  --ice:#96D9D6; --fighting:#C22E28; --poison:#A33EA1; --ground:#E2BF65; --flying:#A98FF3;
+  --psychic:#F95587; --bug:#A6B91A; --rock:#B6A136; --ghost:#735797; --dragon:#6F35FC;
+  --dark:#705746; --steel:#B7B7CE; --fairy:#D685AD;
+}
+:root { --footer-h: 10% }   /* use a real px height, not % */
+
+footer{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: var(--footer-h);
+  box-sizing: border-box;     /* include padding inside height */
+  background: black;
+  color: white;
+  text-align: center;
+  padding: 0.02%;
+  z-index: 10;
+  font-size: 70%;
+}
+main { padding-bottom: var(--footer-h); }
+.page { padding-bottom: var(--footer-h); }
+.page-count { 
+  min-width: 3.5ch;
+  text-align: center;
+  font-weight: 600; 
+}
+
+
+a.card,
+a.card:link,
+a.card:visited {
+  color: inherit;
+  text-decoration: none;
+}
+a.card:hover { text-decoration: none; }
+
+.card .title {
+  color: var(--accent, currentColor);
+}
+.detail .title {
+  color: var(--accent, #333);
+}
+
+
+/* Type chips */
+.type{
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1;
+  margin-right: 8px;
+}
+
+/* --- Map primary card accent by class -> sets --accent --- */
+.detail--normal, .card--normal { --accent: var(--normal); }
+.detail--fire, .card--fire { --accent: var(--fire); }
+.detail--water, .card--water { --accent: var(--water); }
+.detail--electric, .card--electric { --accent: var(--electric); }
+.detail--grass, .card--grass { --accent: var(--grass); }
+.detail--ice, .card--ice { --accent: var(--ice); }
+.detail--fighting, .card--fighting { --accent: var(--fighting); }
+.detail--poison, .card--poison { --accent: var(--poison); }
+.detail--ground, .card--ground { --accent: var(--ground); }
+.detail--flying, .card--flying { --accent: var(--flying); }
+.detail--psychic, .card--psychic { --accent: var(--psychic); }
+.detail--bug, .card--bug { --accent: var(--bug); }
+.detail--rock, .card--rock { --accent: var(--rock); }
+.detail--ghost, .card--ghost { --accent: var(--ghost); }
+.detail--dragon, .card--dragon { --accent: var(--dragon); }
+.detail--dark, .card--dark { --accent: var(--dark); }
+.detail--steel, .card--steel { --accent: var(--steel); }
+.detail--fairy, .card--fairy { --accent: var(--fairy); }
+
+/* --- Color each type chip by type --- */
+.type--normal { background: var(--normal); }
+.type--fire { background: var(--fire); }
+.type--water { background: var(--water); }
+.type--electric { background: var(--electric); }
+.type--grass { background: var(--grass); }
+.type--ice { background: var(--ice); }
+.type--fighting { background: var(--fighting); }
+.type--poison { background: var(--poison); }
+.type--ground { background: var(--ground); }
+.type--flying { background: var(--flying); }
+.type--psychic { background: var(--psychic); }
+.type--bug { background: var(--bug); }
+.type--rock { background: var(--rock); }
+.type--ghost { background: var(--ghost); }
+.type--dragon { background: var(--dragon); }
+.type--dark { background: var(--dark); }
+.type--steel { background: var(--steel); }
+.type--fairy { background: var(--fairy); }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchGeneration, fetchPokemon } from '../api/pokeapi';
+import { fetchGeneration, fetchPokemon, fetchSpecies } from '../api/pokeapi';
 import type { Pokemon, PokemonTypeName } from '../types/pokemon';
 import PokemonSprite from '../components/PokemonSprite';
 
@@ -14,6 +14,8 @@ const TYPES: PokemonTypeName[] = [
   'flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'
 ];
 
+
+
 export default function GalleryView() {
   const [gen, setGen] = useState<number>(1);
   const [typeFilters, setTypeFilters] = useState<Set<PokemonTypeName>>(new Set());
@@ -27,16 +29,52 @@ export default function GalleryView() {
     });
 
   useEffect(() => {
-    let isMounted = true;
-    (async () => {
+  let isMounted = true;
+  (async () => {
+    try {
       const g = await fetchGeneration(gen);
-      // limit to first 50 of the generation to keep it snappy
-      const names = g.pokemon_species.slice(0, 30).map(s => s.name);
-      const full = await Promise.all(names.map(n => fetchPokemon(n)));
+
+      // species names from the generation (cap to keep it snappy)
+      const speciesNames = g.pokemon_species.slice(0, 156).map((s: any) => s.name);
+
+      // Map species -> default variety's pokemon name (handles deoxys, giratina, etc.)
+      const defaultPokemonNames = await Promise.all(
+        speciesNames.map(async (name: string) => {
+          try {
+            const s = await fetchSpecies(name);
+            const def = s.varieties.find((v: any) => v.is_default) ?? s.varieties[0];
+            return def.pokemon.name; // e.g. "deoxys-normal"
+          } catch (e) {
+            console.warn('species lookup failed:', name, e);
+            return null;
+          }
+        })
+      );
+
+      // Dedup + drop nulls
+      const names = Array.from(new Set(defaultPokemonNames.filter(Boolean) as string[]));
+
+      // Fetch pokemon entries; tolerate individual failures
+      const results = await Promise.allSettled<Pokemon>(
+        names.map(n => fetchPokemon(n))
+      );
+
+      const full = results
+        .filter(
+          (r): r is PromiseFulfilledResult<Pokemon> => r.status === 'fulfilled'
+        )
+        .map(r => r.value);
+
       if (isMounted) setItems(full);
-    })();
-    return () => { isMounted = false; };
-  }, [gen]);
+    } catch (e) {
+      console.error(e);
+      // optional: set an error state if you want to show a toast/message
+      // setErr('Failed to load generation');
+    }
+  })();
+  return () => { isMounted = false; };
+}, [gen]);
+
 
   const filtered = useMemo(() => {
     if (typeFilters.size === 0) return items;
@@ -70,7 +108,11 @@ export default function GalleryView() {
       </div>
 
       <div className="grid">
-        {filtered.map(p => <PokemonSprite key={p.id} p={p} />)}
+        {filtered.map(p => (
+          <div key={p.id}>
+            <PokemonSprite p={p} />
+          </div>
+        ))}
       </div>
     </div>
   );

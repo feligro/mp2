@@ -1,11 +1,32 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchPokemonPage, fetchPokemon, fetchAllSpeciesNames } from '../api/pokeapi';
+import { fetchPokemonPage, fetchPokemon, fetchAllSpeciesNames, fetchSpecies } from '../api/pokeapi';
 import type { Pokemon } from '../types/pokemon';
 import SearchBar from '../components/SearchBar';
 import PokemonCard from '../components/PokemonCard';
 import useDebounce from '../hooks/useDebounce';
 
-type SortKey = 'name' | 'id' | 'generation';
+type SortKey = 'name' | 'id';
+
+type StatKey =
+  | 'hp'
+  | 'attack'
+  | 'defense'
+  | 'special-attack'
+  | 'special-defense'
+  | 'speed';
+
+const STAT_OPTIONS: StatKey[] = [
+  'hp',
+  'attack',
+  'defense',
+  'special-attack',
+  'special-defense',
+  'speed',
+];
+
+const PAGE_SIZE = 512;
+const TOTAL_COUNT = 1025;
+const TOTAL_PAGES = Math.ceil(TOTAL_COUNT / PAGE_SIZE);
 
 export default function ListView() {
   const [rawQuery, setRawQuery] = useState('');
@@ -14,12 +35,17 @@ export default function ListView() {
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [asc, setAsc] = useState(true);
 
+  const [statKey, setStatKey] = useState<StatKey>('hp');
+  const [cmp, setCmp] = useState<'gt' | 'lt' | 'eq'>('gt');
+  const [statValue, setStatValue] = useState<number | ''>('');
+
   const [items, setItems] = useState<Pokemon[]>([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // Load either a normal page or a global search result
+  const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -27,33 +53,45 @@ export default function ListView() {
       setErr(null);
       try {
         const q = query.trim().toLowerCase();
+        const qn = q.replace(/\s+/g, '-');
 
         if (q) {
-          // numeric ID?
           if (/^\d+$/.test(q)) {
             const mon = await fetchPokemon(parseInt(q, 10));
             if (alive) setItems([mon]);
             return;
           }
-          // exact name match first (e.g., "mew")
-          try {
-            const exact = await fetchPokemon(q);
-            if (alive) { setItems([exact]); return; }
-          } catch { /* not exact, continue */ }
 
-          // substring search over all species names, cap to 24 matches
-          const names = (await fetchAllSpeciesNames())
-            .filter(n => n.includes(q))
+          try {
+            const exact = await fetchPokemon(qn);
+            if (alive) { setItems([exact]); return; }
+          } catch {}
+
+          try {
+            const species = await fetchSpecies(qn);
+            const varietyNames = species.varieties.map((v: any) => v.pokemon.name);
+            const mons = await Promise.all(varietyNames.map((name: string) => fetchPokemon(name)));
+            if (alive) { setItems(mons); return; }
+          } catch {}
+
+          const speciesMatches = (await fetchAllSpeciesNames())
+            .filter((n: string) => n.includes(q))
             .slice(0, 24);
 
-          const full = await Promise.all(names.map(n => fetchPokemon(n)));
-          if (alive) setItems(full);
+          const mons = await Promise.all(
+            speciesMatches.map(async (name: string) => {
+              const s = await fetchSpecies(name);
+              const def = s.varieties.find((v: any) => v.is_default) ?? s.varieties[0];
+              return fetchPokemon(def.pokemon.name);
+            })
+          );
+          if (alive) setItems(mons);
           return;
         }
 
-        // No query: classic paged list (60 per page)
-        const page = await fetchPokemonPage(offset, 513);
-        const full = await Promise.all(page.results.map(r => fetchPokemon(r.name)));
+        // use PAGE_SIZE everywhere
+        const page = await fetchPokemonPage(offset, PAGE_SIZE);
+        const full = await Promise.all(page.results.map((r: any) => fetchPokemon(r.name)));
         if (alive) setItems(full);
       } catch (e: any) {
         if (alive) setErr(e?.message ?? 'Failed to load Pokémon');
@@ -65,14 +103,32 @@ export default function ListView() {
   }, [query, offset]);
 
   const shown = useMemo(() => {
-    // Only sort the current 'items' (they are either the page or search results)
-    const arr = items.slice().sort((a, b) => {
-      const va = sortKey === 'name' ? a.name : a.id;
-      const vb = sortKey === 'name' ? b.name : b.id;
-      return (va < vb ? -1 : va > vb ? 1 : 0) * (asc ? 1 : -1);
-    });
-    return arr;
-  }, [items, sortKey, asc]);
+  const filtered = items.filter(p => {
+    if (statValue === '') return true;        
+    const entry = p.stats.find(s => s.stat.name === statKey);
+    const v = entry?.base_stat ?? 0;
+    const n = Number(statValue);
+    if (cmp === 'gt') return v > n;
+    if (cmp === 'lt') return v < n;
+    return v === n; // eq
+  });
+
+  const arr = filtered.slice().sort((a, b) => {
+    const va = sortKey === 'name' ? a.name : a.id;
+    const vb = sortKey === 'name' ? b.name : b.id;
+    return (va < vb ? -1 : va > vb ? 1 : 0) * (asc ? 1 : -1);
+  });
+  return arr;
+}, [items, sortKey, asc, statKey, cmp, statValue]);
+
+  const atFirst = currentPage <= 1;
+  const atLast  = currentPage >= TOTAL_PAGES;
+
+  const goPrev = () =>
+    setOffset(o => Math.max(0, o - PAGE_SIZE));
+
+  const goNext = () =>
+    setOffset(o => Math.min((TOTAL_PAGES - 1) * PAGE_SIZE, o + PAGE_SIZE));
 
   return (
     <div className="page">
@@ -91,13 +147,50 @@ export default function ListView() {
 
         <button onClick={() => setAsc(a => !a)}>{asc ? 'Asc' : 'Desc'}</button>
 
-        <button onClick={() => setOffset(o => Math.max(0, o - 513))} disabled={!!query}>Prev Page</button>
-        <button onClick={() => setOffset(o => o + 513)} disabled={!!query}>Next Page</button>
+        { }
+        <div className="stat-filter">
+          <label>
+            Stat:&nbsp;
+            <select
+              value={statKey}
+              onChange={e => setStatKey(e.target.value as StatKey)}
+              className="stat-name"
+            >
+              {STAT_OPTIONS.map(s => (
+                <option key={s} value={s} className="stat-name">{s}</option>
+              ))}
+            </select>
+          </label>
+
+          <select value={cmp} onChange={e => setCmp(e.target.value as 'gt'|'lt'|'eq')}>
+            <option value="gt">&gt;</option>
+            <option value="lt">&lt;</option>
+            <option value="eq">=</option>
+          </select>
+
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            value={statValue}
+            onChange={e => {
+              const v = e.target.value;
+              setStatValue(v === '' ? '' : Number(v));
+            }}
+            placeholder="value"
+          />
+
+          { }
+          <button onClick={() => setStatValue('')}>Clear stat</button>
+        </div>
+        <button onClick={goPrev} disabled={!!query || atFirst}>&larr; Prev</button>
+        <span className="page-count">{currentPage}/{TOTAL_PAGES}</span>
+        <button onClick={goNext} disabled={!!query || atLast}>Next &rarr;</button>
 
         {query && <button onClick={() => setRawQuery('')}>Clear</button>}
       </div>
 
-      {err && <p style={{ color: 'crimson' }}>{err}</p>}
+      {err && <p className="error">{err}</p>}
       {loading && <p>Loading…</p>}
 
       <div className="list">
